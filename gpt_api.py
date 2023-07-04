@@ -2,7 +2,7 @@ import openai
 
 class GPTWrapper:
 
-    def __init__(self):
+    def __init__(self, file_check=False):
         self.key = "your-openai-key"
 
     def getPrompt(self):
@@ -15,7 +15,6 @@ class GPTWrapper:
         return response.choices[0].message.content
 
     def run(self):
-        openai.api_key = self.key
         while (True):
             prompt = self.getPrompt()
             if len(prompt) == 0: continue
