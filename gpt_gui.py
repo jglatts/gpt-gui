@@ -51,7 +51,6 @@ class GPTGUI:
         self.setWindow()
         self.setTextBoxes()
         self.root.mainloop() 
-        pass
 
 if __name__ == "__main__":
     gui = GPTGUI(Tk())    
