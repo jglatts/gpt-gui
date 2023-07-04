@@ -2,12 +2,14 @@ import tkinter
 from tkinter import *
 from tkinter import messagebox, scrolledtext
 from gpt_api import GPTWrapper
+from tts_api import TTSWrapper
 
 class GPTGUI:
 
     def __init__(self, root):
         self.root = root
         self.gpt_api = GPTWrapper()
+        self.tts_api = TTSWrapper()
         self.gui_font = "Arial"
         self.text_area = None
         self.gpt_text_area = None
@@ -40,6 +42,13 @@ class GPTGUI:
         self.gpt_text_area.place(x=160, y=180)
         startBtn = Button(self.root, text ="Generate Response", command = self.genResponse)
         startBtn.place(x = 150, y = 340)
+        saveTTSBtn = Button(self.root, text ="Generate Text-To-Speech", command = self.prepareTTS)
+        saveTTSBtn.place(x = 300, y = 340)
+
+    def prepareTTS(self):
+        entry = self.gpt_text_area.get("1.0", "end-1c")    
+        if len(entry) < 0 or entry == " ": return None
+        self.tts_api.getTTS(entry)
 
     def genResponse(self):
         entry = self.text_area.get("1.0","end-1c")
