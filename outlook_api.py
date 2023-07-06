@@ -4,9 +4,40 @@ import html2text
 class OutlookAPI:
 
     def __init__(self):
-        self.auth_token = "your-microsoft-token"
+        self.auth_token = ""
+        self.auth_token_send = ""
         self.outlook_inbox_url = "https://graph.microsoft.com/v1.0/me/mailfolders/inbox/messages"
-        self.outlook_sent_images_url = "https://graph.microsoft.com/v1.0/me/mailfolders/SentItems/messages"
+        self.outlook_send_url = "https://graph.microsoft.com/v1.0/me/sendMail"
+        self.outlook_draft_url = "https://graph.microsoft.com/v1.0/me/messages"
+
+    def construct_email_data(self, content):
+        my_data = {
+            "message": {
+                "subject": "Test email from the API!",
+                "body" : {
+                        "contentType": "Text",
+                        "content": str(content)
+                },
+                "toRecipients": [{
+                    "emailAddress": {
+                    "address": "johnglatts1@hotmail.com"
+                    }
+                }],
+            },
+            "saveToSentItems": "true"
+        }
+        return my_data
+
+    def send_email(self, content):
+        headers = { "Authorization": self.auth_token_send }  
+        ret = requests.post(self.outlook_send_url, json=self.construct_email_data(content), headers=headers) 
+        print(ret.text)
+
+    def send_draft(self, content):
+        headers = { "Authorization": self.auth_token_send }  
+        # need to test in explorer
+        ret = requests.post(self.outlook_draft_url, json=self.construct_email_data(content), headers=headers) 
+        print(ret.text)        
 
     def get_email_address(self, res):
         return res['from']['emailAddress']['address']
@@ -36,7 +67,10 @@ class OutlookAPI:
             print(self.get_email_body(res.json()["value"][i]))
             print()
 
-            
+        self.send_email("Hello world this a test")    
+        self.send_draft("Hello world this a draft")  
+
+
 
 if __name__ == "__main__":
     outApi = OutlookAPI()
