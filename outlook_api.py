@@ -1,5 +1,6 @@
 import requests
 import html2text
+from gpt_api import GPTWrapper
 
 class OutlookAPI:
 
@@ -9,6 +10,8 @@ class OutlookAPI:
         self.outlook_inbox_url = "https://graph.microsoft.com/v1.0/me/mailfolders/inbox/messages"
         self.outlook_send_url = "https://graph.microsoft.com/v1.0/me/sendMail"
         self.outlook_draft_url = "https://graph.microsoft.com/v1.0/me/messages"
+        self.gpt_wrapper = GPTWrapper()
+
 
     def construct_email_data(self, content):
         my_data = {
@@ -32,7 +35,7 @@ class OutlookAPI:
             "subject": "This is a draft",
             "body": {
                 "contentType": "HTML",
-                "content": content
+                "content": str(content)
              },
             "toRecipients": [{
                 "emailAddress": {
@@ -66,7 +69,14 @@ class OutlookAPI:
         h.ignore_links = True
         h.ignore_images = True
         h.ignore_tables = True
+        # will need to some addnlt work to go through the table
         return h.handle(res['body']['content']).lower()
+    
+    def gen_gpt_response(self, msg):
+        prompt = "write an email response, in a professional tone, to the following message: " + msg
+        res = self.gpt_wrapper.get_response(prompt)
+        print("\n\nGPT generated the following email response: " + str(res))
+        self.send_draft(res)
 
     def test_get(self, n=5):
         headers = { "Authorization" : self.auth_token }    
@@ -80,14 +90,12 @@ class OutlookAPI:
             print(self.get_email_body(res.json()["value"][i]))
             print()
 
-
     def test_post(self):
         self.send_email("Hello world this a test")    
         self.send_draft("Hello world this a draft")  
 
 
-
 if __name__ == "__main__":
     outApi = OutlookAPI()
     outApi.test_get(n=5)        
-    outApi.test_post()
+    #outApi.test_post()
