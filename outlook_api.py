@@ -99,7 +99,29 @@ class OutlookAPI:
     def get_mail(self, n):
         url = self.outlook_inbox_url + "?select=subject,from,receivedDateTime,body&$top=" + str(n)
         res = requests.get(url, headers=self.headers)
+        print(res.status_code)
         return  res.json()["value"]
+    
+    def print_email_info(self, data_dict):
+        print("From Email:\t" + self.get_email_address(data_dict))
+        print("Subject:\t" + self.get_email_subject(data_dict))
+        print("\nCreate ChatGPT-generated response to email?\nEnter Y or N")
+
+    def create_gpt_email_response(self, data_dict):
+        msg = "write an email response, in a professional tone, to the following email: "
+        msg += self.get_email_body(data_dict)
+        response = self.gpt_wrapper.get_response(msg)
+        self.send_email_reply(self.get_email_id(data_dict), self.get_email_address(data_dict), response)
+
+    def check_emails_for_reply(self, n):
+        data = self.get_mail(n)
+        for i in range(len(data)):
+            self.print_email_info(data[i])
+            x = input()
+            if (x == 'Y' or x == 'y'):
+                self.create_gpt_email_response(data[i])
+                print("Draft reply email to " + self.get_email_address(data[i]) + " created")
+            print()    
 
     def test_get(self, n=5):
         checked_words = []
@@ -120,11 +142,12 @@ class OutlookAPI:
         self.send_draft("Hello world this a draft")  
 
     def test_reply(self):
-        email_data = self.get_mail(1)
+        email_data = self.get_mail(10)
+        idx = 6
         msg = "write an email response, in a professional tone, to the following email: \n"
-        msg += self.get_email_body(email_data[0])
+        msg += self.get_email_body(email_data[idx])
         response = self.gpt_wrapper.get_response(msg)
-        self.send_email_reply(self.get_email_id(email_data[0]), self.get_email_address(email_data[0]), response)
+        self.send_email_reply(self.get_email_id(email_data[idx]), self.get_email_address(email_data[idx]), response)
         
     def test():
         outApi = OutlookAPI()
@@ -134,4 +157,5 @@ class OutlookAPI:
 
 
 if __name__ == "__main__":
-    OutlookAPI.test()
+    outApi = OutlookAPI()  
+    outApi.check_emails_for_reply(n=100)
