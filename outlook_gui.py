@@ -42,16 +42,22 @@ class OutlookGUI:
         self.gpt_text_area.grid(column = 5, pady = 10, padx = 10)
         self.gpt_text_area.place(x=160, y=180)
         loadEmailBtn = Button(self.root, text ="Load Emails", command = self.loadEmail)
-        loadEmailBtn.place(x = 15, y = 110)
+        loadEmailBtn.place(x = 15, y = 90)
         startBtn = Button(self.root, text ="Generate Response", command = self.genResponse)
         startBtn.place(x = 150, y = 340)
         nextEmailBtn = Button(self.root, text ="Next Email", command = self.nextEmail)
         nextEmailBtn.place(x = 300, y = 340)
 
+    def showEmailSubject(self):
+        self.emails = self.outlook_api.get_mail(n=50) # get 50 emails
+        email_data = self.outlook_api.get_email_body(self.emails[self.email_idx])
+        self.text_area.insert(END, email_data + "\n\n")        
+
     def loadEmail(self):
         self.emails = self.outlook_api.get_mail(n=50) # get 50 emails
         email_data = self.outlook_api.get_email_address(self.emails[self.email_idx]) + "\n" + self.outlook_api.get_email_subject(self.emails[self.email_idx])
         self.text_area.insert(END, email_data + "\n\n")
+        self.showEmailSubject()
 
     def nextEmail(self):
         self.gpt_text_area.delete("1.0", END)
@@ -59,7 +65,6 @@ class OutlookGUI:
         self.email_idx += 1
         self.loadEmail()
             
-
     def genResponse(self):
         email_address = self.outlook_api.get_email_address(self.emails[self.email_idx])
         email_id = self.outlook_api.get_email_id(self.emails[self.email_idx])
